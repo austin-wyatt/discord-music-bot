@@ -1,0 +1,11 @@
+{
+  "plugins": [
+    ["module-resolver", {
+      "root": ["./.webpack/main/index.js"],
+      "alias": {
+        "test": "./test",
+        "underscore": "lodash"
+      }
+    }]
+  ]
+}
