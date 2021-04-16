@@ -19,7 +19,6 @@ const createWindow = (): void => {
       nodeIntegration: true,
       preload: './preload.js',
       contextIsolation: false,
-      webSecurity: false
     }
   });
 

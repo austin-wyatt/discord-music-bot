@@ -1,10 +1,18 @@
-import { Button, Slider } from '@material-ui/core';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom'
-import * as webCalls from './DiscordFunctions/webCalls'
+import Playback from './Pages/Playback/Playback'
+import { Pages } from './types';
+import PageBar from './Components/PageBar/PageBar'
+import Home from './Pages/Home/Home'
+import Tracks from './Pages/Tracks/Tracks'
+
+interface IProps{
+
+}
 
 interface IState{
-    volume: number
+    page: Pages;
+    menuOpen: boolean;
 }
 
 class App extends React.Component<{}, IState>{
@@ -12,52 +20,48 @@ class App extends React.Component<{}, IState>{
         super(props)
 
         this.state = {
-            volume: 50
+            page: Pages.Playback,
+            menuOpen: true
         }
     }
     render(){
+        let PageToDisplay: React.ReactNode = null
+
+        switch(this.state.page){
+            case Pages.Home:
+                PageToDisplay = <Home />;
+                break;
+            case Pages.Playback:
+                PageToDisplay = <Playback />;
+                break;
+            case Pages.Tracks:
+                PageToDisplay = <Tracks />;
+                break;                
+        }
+
         return (
-            <>
             <div>
-                <Button 
-                    onClick={() => webCalls.initialize()}
-                    style={{backgroundColor: 'blue', marginRight: '10px'}}
-                >INITIALIZE</Button>
-                <Button 
-                    onClick={() => webCalls.playYoutubeLink()}
-                    style={{backgroundColor: 'red', marginRight: '10px'}}
-                >PLAY YOUTUBE</Button>
+                <div style={{display:'block', width: '100vw', height: '10vh'}}>
+                    {/* <div style={{marginRight:'5px', paddingTop: '2px'}} onClick={() => this.setState({menuOpen: !this.state.menuOpen})}>
+                        <svg width="42" height="42" fill="currentColor" viewBox="0 0 32 32">
+                            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                        </svg>
+                    </div> */}
+                    {this.state.menuOpen ? <PageBar 
+                        setPage = {(page) => {
+                            this.setState({
+                                page: page
+                            })
+                        }}
+                    /> : null}
+                </div>
+
+                <div style={{display:'block'}}>
+                    {PageToDisplay}
+                </div>
             </div>
-            <div>
-                <Slider 
-                    value={this.state.volume} 
-                    style={{width:'25%'}}
-                    onChange={(e, val) => {
-                        let n = val as number
-                        this.setState({volume: n})
-                    }} 
-                    onChangeCommitted={(e, val) => {
-                        let n = val as number
-                        this.setState({volume: n})
-                        webCalls.setVolume(n / 100)
-                    }} 
-                />
-            </div>
-            <div>
-                <Button 
-                    onClick={() => webCalls.play()}
-                    style={{backgroundColor: 'grey', marginRight: '10px'}}
-                >PLAY</Button>
-                <Button 
-                    onClick={() => webCalls.pause()}
-                    style={{backgroundColor: 'grey', marginRight: '10px'}}
-                >PAUSE</Button>
-            </div>
-            </>
         )
     }
 }
-
-webCalls.initialize() //initialize the discord connection
 
 ReactDOM.render(<App />, document.body)
