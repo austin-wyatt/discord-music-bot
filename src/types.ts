@@ -49,3 +49,14 @@ export const mapMediaTypeToString: mediaTypeMap = {
     [MediaType.MediaLink]: 'Online Resource',
     [MediaType.YoutubeLink]: 'Youtube Link'
 }
+
+export interface Action{
+    type: string,
+    payload: any
+}
+
+export interface QueueState{
+    queue: Track[]
+}
+
+export interface RootState extends QueueState{}

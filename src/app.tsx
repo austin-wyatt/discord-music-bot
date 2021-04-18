@@ -5,6 +5,8 @@ import { Pages } from './types';
 import PageBar from './Components/PageBar/PageBar'
 import Home from './Pages/Home/Home'
 import Tracks from './Pages/Tracks/Tracks'
+import { Provider } from 'react-redux';
+import store from './Redux/store'
 
 interface IProps{
 
@@ -64,4 +66,8 @@ class App extends React.Component<{}, IState>{
     }
 }
 
-ReactDOM.render(<App />, document.body)
+ReactDOM.render(
+<Provider store={store}>
+    <App />
+</Provider>
+, document.body)

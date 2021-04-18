@@ -91,8 +91,10 @@
     "@discordjs/opus": "^0.5.0",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
+    "@reduxjs/toolkit": "^1.5.1",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
+    "@types/react-redux": "^7.1.16",
     "@zeit/webpack-asset-relocator-loader": "^0.8.0",
     "axios": "^0.21.1",
     "bufferutil": "^4.0.3",
@@ -102,6 +104,7 @@
     "libsodium-wrappers": "^0.7.9",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-redux": "^7.2.3",
     "utf-8-validate": "^5.0.4",
     "whatwg-fetch": "^3.6.2",
     "zlib-sync": "^0.1.7"

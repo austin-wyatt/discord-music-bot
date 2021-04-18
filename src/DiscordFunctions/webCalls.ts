@@ -15,8 +15,17 @@ export const initialize = () => {
 
 }
 
-export const playYoutubeLink = () => {
-    DiscordAxiosInstance.put('playYoutubeLink&SnJ5Xnw4Wkk')
+export const playYoutubeLink = (link: string) => {
+    DiscordAxiosInstance.put('playYoutubeLink&' + link)
+    .then((response) => {
+        console.log(response)
+    }).catch((error: any) => {
+        console.log(error)
+    })
+}
+
+export const playMedia = (link: string) => {
+    DiscordAxiosInstance.put('playMedia&' + link)
     .then((response) => {
         console.log(response)
     }).catch((error: any) => {

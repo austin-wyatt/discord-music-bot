@@ -3,10 +3,15 @@ import * as React from 'react'
 import AddEditTrackModal from '../../Components/Modals/AddEditTrackModal'
 import * as Database from '../../Dexie/Database'
 import { Track, DefaultTrack, Category, DefaultCategory } from '../../types';
-import EditIcon from '@material-ui/icons/Edit';
 import AddEditCategoryModal from '../../Components/Modals/AddEditCategoryModal'
+import * as actions from '../../Redux/actions'
+import { connect } from 'react-redux'
 
-interface IProps{
+interface DispatchProps{
+    addTrackToQueue: (track: Track) => void
+}
+
+interface IProps extends DispatchProps{
 
 }
 
@@ -69,7 +74,7 @@ class Tracks extends React.Component<IProps, IState>{
         this.refreshTracks(true)
     }
 
-    refreshCategories(refreshSearchData?: boolean){
+    refreshCategories(refreshSearchData?: boolean, fnCallback?: () => void){
         let categorySearchData: SearchData = {}
 
         Database.getAllCategories((items) => {
@@ -84,11 +89,11 @@ class Tracks extends React.Component<IProps, IState>{
 
             this.setState({
                 categories: items
-            })
+            }, fnCallback)
         })
     }
 
-    refreshTracks(refreshSearchData?: boolean){
+    refreshTracks(refreshSearchData?: boolean, fnCallback?: () => void){
         let trackSearchData: SearchData = {}
 
         Database.getAllTracks((items) => {
@@ -103,7 +108,7 @@ class Tracks extends React.Component<IProps, IState>{
 
             this.setState({
                 tracks: items
-            })
+            }, fnCallback)
         })
     }
 
@@ -115,7 +120,7 @@ class Tracks extends React.Component<IProps, IState>{
         });
     };
 
-    handleClose = () => {
+    handleMenuClose = () => {
         this.setState({
             mouseX: 0,
             mouseY: 0
@@ -173,13 +178,13 @@ class Tracks extends React.Component<IProps, IState>{
                 {this.state.displayTrackModal ? 
                     <AddEditTrackModal 
                         track={this.state.currentTrack}
-                        onClose={() => this.setState({displayTrackModal: false}, () => this.refreshTracks())}
+                        onClose={() => this.setState({displayTrackModal: false}, () => {this.refreshTracks(undefined, this.handleSearch)})}
                     /> 
                 : null}
                 {this.state.displayCategoryModal ? 
                     <AddEditCategoryModal 
                         category={this.state.currentCategory}
-                        onClose={() => this.setState({displayCategoryModal: false}, () => this.refreshCategories())}
+                        onClose={() => this.setState({displayCategoryModal: false}, () => {this.refreshCategories(undefined, this.handleSearch)})}
                     /> 
                 : null}
                 <div style={{height: '40px', width: '100%', maxHeight: '40px', display: 'flex', marginBottom: '20px'}}>
@@ -211,26 +216,25 @@ class Tracks extends React.Component<IProps, IState>{
                         }}
                         inputProps={{maxLength: 40}}
                     />
-
-                    <div style={{display:'flex', flexDirection: 'column'}}>
-                        <Button
-                            onClick={() => this.handleSearch()}
-                            style = {{background: 'white'}}
-                        >
-                            Search
-                        </Button>
-                        <Select 
-                            value={this.state.searchType}
-                            onChange={(event) => {
-                                this.setState({
-                                    searchType: event.target.value as SearchType
-                                })
-                            }}
-                        >{SearchTypeStrings.map((s, index) => {
+                    <Button
+                        onClick={() => this.handleSearch()}
+                        style = {{background: 'white', marginLeft: '5px'}}
+                    >
+                        Search
+                    </Button>
+                    <Select 
+                        value={this.state.searchType}
+                        style={{marginLeft: '35px'}}
+                        onChange={(event) => {
+                            this.setState({
+                                searchType: event.target.value as SearchType
+                            })
+                        }}
+                    >
+                        {SearchTypeStrings.map((s, index) => {
                             return <MenuItem value={index}>{s}</MenuItem>
                         })}
                     </Select>
-                    </div>
                 </div>
                 <div style={{display: 'flex', width: '100%'}}>
                 <List
@@ -280,7 +284,7 @@ class Tracks extends React.Component<IProps, IState>{
                 <Menu
                     keepMounted
                     open={this.state.mouseY !== 0}
-                    onClose={this.handleClose}
+                    onClose={this.handleMenuClose}
                     anchorReference="anchorPosition"
                     anchorPosition={
                     this.state.mouseY !== 0 && this.state.mouseX !== 0
@@ -289,7 +293,7 @@ class Tracks extends React.Component<IProps, IState>{
                     }
                 >
                     <MenuItem onClick={() => {
-                        this.handleClose()
+                        this.handleMenuClose()
                         if(this.state.currentTrack.displayname != ''){
                             this.setState({
                                 displayTrackModal: true
@@ -303,7 +307,7 @@ class Tracks extends React.Component<IProps, IState>{
                         }}>Edit</MenuItem>
                     {this.state.currentCategory.name != '' ? 
                         <MenuItem onClick={() => {
-                            this.handleClose()
+                            this.handleMenuClose()
                             this.setState({
                                 displayTrackModal: true,
                                 currentTrack: {...DefaultTrack, categoryid: this.state.currentCategory.id}
@@ -313,7 +317,7 @@ class Tracks extends React.Component<IProps, IState>{
                     : null}
                     {this.state.currentCategory.id != 0 ? 
                         <MenuItem onClick={() => {
-                            this.handleClose()
+                            this.handleMenuClose()
                             if(this.state.currentTrack.displayname != ''){
                                 Database.deleteTracks([this.state.currentTrack.id], () => this.refreshTracks())
                             }
@@ -328,6 +332,20 @@ class Tracks extends React.Component<IProps, IState>{
                         //TODO
                         }}>
                         Play
+                    </MenuItem>
+                    <MenuItem onClick={() => {
+                        this.handleMenuClose()
+                        if(this.state.currentTrack.displayname != ""){
+                            this.props.addTrackToQueue(this.state.currentTrack)
+                        }
+                        else if(this.state.currentCategory.name != ""){
+                            this.state.tracks.forEach(t => {
+                                if(t.categoryid == this.state.currentCategory.id)
+                                    this.props.addTrackToQueue(t)
+                            })
+                        }
+                        }}>
+                        Add To Queue
                     </MenuItem> 
                     </Menu>
                 </div>
@@ -336,4 +354,4 @@ class Tracks extends React.Component<IProps, IState>{
     }
 }
 
-export default Tracks;
+export default connect(null, actions)(Tracks);
