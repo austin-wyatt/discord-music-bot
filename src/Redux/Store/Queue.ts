@@ -1,15 +1,26 @@
-import { Action, QueueState, Track } from "../../types";
+import { Action, QueueState } from "../../types";
 
 
 
 const initialState: QueueState = {
-    queue: []
+    queue: [],
+    nextEntry: null,
+    previousEntry: null,
+    currentEntry: null,
+    loop: false
 };
 
 export const ADD_TRACK = "ADD_TRACK"
 export const REMOVE_TRACK = "REMOVE_TRACK"
 export const CLEAR_QUEUE = "CLEAR_QUEUE"
-export const SET_ORDER = "SET_ORDER"
+export const SET_ORDER = "SET_ORDER" //figure out if I want to do this
+
+export const SET_NEXT_ENTRY = "SET_NEXT_ENTRY"
+export const SET_PREVIOUS_ENTRY = "SET_PREVIOUS_ENTRY"
+export const SET_CURRENT_ENTRY = "SET_CURRENT_ENTRY"
+
+export const SET_LOOP = "SET_LOOP"
+
 
 
 const queueState = (state = initialState, action: Action) => {
@@ -34,13 +45,37 @@ const queueState = (state = initialState, action: Action) => {
     case CLEAR_QUEUE: {
       return {
         ...state,
-        queue: initialState.queue
+        queue: []
       };
     }
     case SET_ORDER: {
       return {
-        ...state,
+        ...state, 
         queue: action.payload
+      };
+    }
+    case SET_NEXT_ENTRY: {
+      return {
+        ...state, 
+        nextEntry: action.payload
+      };
+    }
+    case SET_PREVIOUS_ENTRY: {
+      return {
+        ...state, 
+        previousEntry: action.payload
+      };
+    }
+    case SET_CURRENT_ENTRY: {
+      return {
+        ...state, 
+        currentEntry: action.payload
+      };
+    }
+    case SET_LOOP: {
+      return {
+        ...state, 
+        loop: action.payload
       };
     }
     default:

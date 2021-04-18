@@ -21,8 +21,8 @@ class Home extends React.Component<IProps, IState>{
 
     render(){
         return (
-            <>
-            <div>
+            <> {/** TODO, add a list of voice channels that the bot is allowed to connect to that can be selected from instead of requiring !jc*/}
+            <div> 
                 <Button 
                     onClick={() => webCalls.initialize()}
                     style={{backgroundColor: 'lightblue', marginRight: '10px'}}

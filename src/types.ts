@@ -55,8 +55,14 @@ export interface Action{
     payload: any
 }
 
-export interface QueueState{
-    queue: Track[]
+export interface QueueState{ //TODO, add loop
+    queue: Track[],
+    nextEntry: Track | null,
+    previousEntry: Track | null,
+    currentEntry: Track | null,
+    loop: boolean
 }
 
-export interface RootState extends QueueState{}
+export interface RootState{
+    queue: QueueState
+}

@@ -50,7 +50,6 @@ class AddEditTrackModal extends React.Component<IProps, IState>{
     }
 
     render(){
-        console.log(this.state.currentTrack)
         let addEditText = this.state.currentTrack.id == 0 ? 'Add Track' : 'Edit Track'
         return(
             <>
@@ -73,8 +72,20 @@ class AddEditTrackModal extends React.Component<IProps, IState>{
                                 value = {this.state.currentTrack.url}
                                 style = {textFieldStyle}
                                 onChange = {(event) => {
+                                    let url = event.target.value
+                                    let testString = 'watch?v='
+
+                                    let mediatype = this.state.currentTrack.mediatype
+                                    if(url.indexOf(testString) != -1){
+                                        url = url.substr(url.indexOf(testString) + testString.length)
+                                        mediatype = MediaType.YoutubeLink
+                                        if(url.indexOf('&') != -1){
+                                            url = url.substr(0, url.indexOf('&'))
+                                        }
+                                    }
+                                    
                                     this.setState({
-                                        currentTrack: {...this.state.currentTrack, url: event.target.value}
+                                        currentTrack: {...this.state.currentTrack, url: url, mediatype: mediatype}
                                     })
                                 }}
                             />

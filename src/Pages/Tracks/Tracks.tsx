@@ -172,7 +172,7 @@ class Tracks extends React.Component<IProps, IState>{
         })
     }
 
-    render(){
+    render(){ //TODO, add file mass import
         return(
             <>
                 {this.state.displayTrackModal ? 
@@ -251,6 +251,7 @@ class Tracks extends React.Component<IProps, IState>{
                                     this.handleClick(event)
                                     this.setState({currentCategory: c, currentTrack: DefaultTrack})
                                 }}
+                                key={'categorylistitem#$' + c.id}
                             >
                                 <ListItemText primary={c.name}/>
                             </ListItem> : null}
@@ -264,11 +265,12 @@ class Tracks extends React.Component<IProps, IState>{
                                         if(this.state.deleteMode){
                                             Database.deleteTracks([t.id], () => this.refreshTracks())
                                         }
-                                        //TODO
                                     }} onContextMenu={(event) => {
                                             this.handleClick(event)
                                             this.setState({currentTrack: t, currentCategory: DefaultCategory})
-                                        }}>
+                                        }}
+                                        key={'tracklistitem#$' + t.id}
+                                    >
                                         <ListItemText primary={t.displayname} />
                                     </ListItem> : null}
                                 </>)
@@ -327,12 +329,6 @@ class Tracks extends React.Component<IProps, IState>{
                             }}>Delete
                         </MenuItem> 
                     : null}
-                    
-                    <MenuItem onClick={() => {
-                        //TODO
-                        }}>
-                        Play
-                    </MenuItem>
                     <MenuItem onClick={() => {
                         this.handleMenuClose()
                         if(this.state.currentTrack.displayname != ""){

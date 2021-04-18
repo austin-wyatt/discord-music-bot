@@ -15,19 +15,20 @@ export const initialize = () => {
 
 }
 
-export const playYoutubeLink = (link: string) => {
+export const playYoutubeLink = (link: string) => { //TODO, send track id
     DiscordAxiosInstance.put('playYoutubeLink&' + link)
     .then((response) => {
-        console.log(response)
+
     }).catch((error: any) => {
         console.log(error)
     })
 }
 
 export const playMedia = (link: string) => {
-    DiscordAxiosInstance.put('playMedia&' + link)
+    let encodedLink = encodeURI(link)
+    DiscordAxiosInstance.put('playMedia&' + encodedLink)
     .then((response) => {
-        console.log(response)
+        
     }).catch((error: any) => {
         console.log(error)
     })
@@ -59,3 +60,39 @@ export const setVolume = (volume: number) => {
         console.log(error)
     })
 }
+
+let webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
+
+export const sendInterrupt = () => { 
+    if(webSocketClient.readyState == webSocketClient.OPEN){
+        // webSocketClient.send('video_selected')
+    }
+    else{
+        webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
+        initializeWebSocket()
+    }
+}
+
+const initializeWebSocket = () => {
+    webSocketClient.onmessage = (event) => {
+        console.log("Websocket message received")
+        console.log(event)
+        if(event.data == 'playback_ended'){ 
+            console.log('advance video queue')
+            //@ts-ignore, lord please forgive me for the atrocities I've committed
+            if(window['playNextVideoInQueue']){
+                //@ts-ignore
+                window['playNextVideoInQueue']()
+            }
+        }
+    }
+    
+    webSocketClient.onopen = (event) => {
+        console.log("Websocket opened")
+        console.log(event)
+    }
+}
+
+initializeWebSocket()
+
+
