@@ -175,6 +175,7 @@ class Tracks extends React.Component<IProps, IState>{
             else{
                 if(t.displayname.toLowerCase().indexOf(this.state.searchValue.toLowerCase()) > -1){
                     trackSearchData[t.id] = true
+                    categorySearchData[t.categoryid] = true
                 }
                 else{
                     trackSearchData[t.id] = false
@@ -267,7 +268,7 @@ class Tracks extends React.Component<IProps, IState>{
                         
                     <TextField 
                         value = {this.state.searchValue}
-                        style = {{marginLeft: '50px'}}
+                        style = {{marginLeft: '50px', width: '150px', minWidth: '150px'}}
                         onChange = {(event) => {
                             this.setState({
                                 searchValue: event.target.value
