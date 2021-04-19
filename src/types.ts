@@ -66,3 +66,14 @@ export interface QueueState{ //TODO, add loop
 export interface RootState{
     queue: QueueState
 }
+
+export interface Channel{
+    id: number,
+    name: string
+}
+
+export interface Guild{
+    id: number,
+    name: string,
+    channels: Channel[]
+}

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Guild } from '../types';
 
 
 const DiscordAxiosInstance = axios.create({
@@ -61,11 +62,44 @@ export const setVolume = (volume: number) => {
     })
 }
 
+export const joinChannel = (guildID: number, channelID: number) => {
+    DiscordAxiosInstance.put('joinChannel&' + guildID + '&' + channelID)
+    .then((response) => {
+        console.log(response)
+    }).catch((error: any) => {
+        console.log(error)
+    })
+}
+
+
+export interface GuildReturnData{
+    [key: number]: Guild
+}
+
+export const getServers = (fnCallback: (guildData: GuildReturnData) => void) => {
+    DiscordAxiosInstance.get('getServers')
+    .then((response) => {
+        fnCallback(response.data)
+    }).catch((error: any) => {
+        console.log(error)
+    })
+}
+
 let webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
 
 export const sendInterrupt = () => { 
     if(webSocketClient.readyState == webSocketClient.OPEN){
         // webSocketClient.send('video_selected')
+    }
+    else{
+        webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
+        initializeWebSocket()
+    }
+}
+
+export const sendVolumeRequest = () => { 
+    if(webSocketClient.readyState == webSocketClient.OPEN){
+        webSocketClient.send('get_volume')
     }
     else{
         webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
@@ -84,6 +118,9 @@ const initializeWebSocket = () => {
                 //@ts-ignore
                 window['playNextVideoInQueue']()
             }
+        }
+        if(event.data.startsWith('volume')){
+            console.log(event.data)
         }
     }
     

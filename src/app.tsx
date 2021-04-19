@@ -23,6 +23,7 @@ interface IProps{
 
 interface IState{
     page: Pages;
+    counter: number;
 }
 
 
@@ -31,7 +32,8 @@ class App extends React.Component<IProps, IState>{
         super(props)
 
         this.state = {
-            page: Pages.Playback
+            page: Pages.Playback,
+            counter: 0
         }
     }
 
@@ -76,6 +78,10 @@ class App extends React.Component<IProps, IState>{
             this.props.setPreviousEntry(previousEntry)
             this.props.setCurrentEntry(track)
         }
+
+        this.setState({
+            counter: this.state.counter + 1
+        }, () => console.log(this.state.counter))
 
         switch(track.mediatype){
             case MediaType.LocalResource:

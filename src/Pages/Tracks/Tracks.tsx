@@ -1,4 +1,4 @@
-import { Button, Collapse, Grid, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, Select, Switch, TextField } from '@material-ui/core';
+import { Button, Collapse, Grid, List, ListItem, ListItemIcon, ListItemText, Menu, MenuItem, Modal, Select, Switch, TextField } from '@material-ui/core';
 import * as React from 'react'
 import AddEditTrackModal from '../../Components/Modals/AddEditTrackModal'
 import * as Database from '../../Dexie/Database'
@@ -6,6 +6,7 @@ import { Track, DefaultTrack, Category, DefaultCategory } from '../../types';
 import AddEditCategoryModal from '../../Components/Modals/AddEditCategoryModal'
 import * as actions from '../../Redux/actions'
 import { connect } from 'react-redux'
+import ImportFromFile from '../../Components/Modals/ImportFromFile';
 
 interface DispatchProps{
     addTrackToQueue: (track: Track) => void
@@ -31,7 +32,9 @@ interface IState{
     searchData: {
         Categories: SearchData,
         Tracks: SearchData
-    }
+    },
+    displayImportModal: boolean
+    displayDeleteModal: boolean
 }
 
 enum SearchType{
@@ -45,7 +48,20 @@ interface SearchData{
 
 const SearchTypeStrings = ['Categories', 'Tracks']
 
-const textFieldStyle = {width: '320', height: '32px', fontSize: '20px', marginLeft: '50px', display: 'inline-block'}
+const modalHeaderStyle = {height: '60px', width: '490px', backgroundColor: '#212121', color: 'whitesmoke', fontSize: '30px', display: 'flex', alignItems: 'center', paddingLeft: '10px'}
+const buttonStyle: React.CSSProperties = {
+    float: 'right',
+    border: '1px solid black',
+    minWidth: `20%`,
+    fontSize: '20px',
+    height: '60px',
+    maxHeight: '60px',
+    borderRadius: '0px',
+    marginRight: '10px',
+    marginTop: '40px',
+    marginBottom: '10px'
+}
+
 
 class Tracks extends React.Component<IProps, IState>{
     constructor(props: IProps){
@@ -64,7 +80,9 @@ class Tracks extends React.Component<IProps, IState>{
             deleteMode: false,
             searchValue: '',
             searchType: SearchType.Categories,
-            searchData: {Categories:{}, Tracks: {}}
+            searchData: {Categories:{}, Tracks: {}},
+            displayImportModal: false,
+            displayDeleteModal: false
         }
     }
 
@@ -187,6 +205,47 @@ class Tracks extends React.Component<IProps, IState>{
                         onClose={() => this.setState({displayCategoryModal: false}, () => {this.refreshCategories(undefined, this.handleSearch)})}
                     /> 
                 : null}
+                {this.state.displayImportModal ? 
+                    <ImportFromFile 
+                        onComplete={() => {
+                            this.setState({
+                                displayImportModal: false
+                            })
+                            this.refreshCategories(undefined, () => this.refreshTracks(undefined, this.handleSearch))
+                        }}
+                        onClose={() => {this.setState({displayImportModal: false})}}
+                    /> 
+                : null}
+                {this.state.displayDeleteModal ? 
+                <Modal
+                    open={true}
+                    onClose={() => this.setState({displayDeleteModal: false})}
+                    style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+                    disableBackdropClick={true}
+                >
+                    <div style={{maxHeight: '600px', width: '500px', background: 'whitesmoke'}}>
+                        <div style={modalHeaderStyle}>
+                            Delete Item
+                        </div>
+
+                        <div style={{fontSize: '20px', marginTop: '40px', marginLeft: '10px'}}>
+                            Confirm that you want to delete this item.
+                        </div>
+                        
+
+                        <Button style={buttonStyle} onClick={() => this.setState({displayDeleteModal: false})}>Cancel</Button>
+                        <Button style={buttonStyle} onClick={() => {
+                            this.setState({displayDeleteModal: false})
+                            if(this.state.currentTrack.displayname != ''){
+                                Database.deleteTracks([this.state.currentTrack.id], () => this.refreshTracks())
+                            }
+                            else if(this.state.currentCategory.name != ''){
+                                Database.deleteCategories([this.state.currentCategory.id], () => this.refreshCategories())
+                            }
+                        }}>Delete</Button>
+                    </div>
+                </Modal>
+                : null}
                 <div style={{height: '40px', width: '100%', maxHeight: '40px', display: 'flex', marginBottom: '20px'}}>
                     <Button
                         onClick={() => this.setState({displayTrackModal: true, currentTrack: DefaultTrack})}
@@ -232,17 +291,27 @@ class Tracks extends React.Component<IProps, IState>{
                         }}
                     >
                         {SearchTypeStrings.map((s, index) => {
-                            return <MenuItem value={index}>{s}</MenuItem>
+                            return <MenuItem value={index} key={'searchtypest' + index}>{s}</MenuItem>
                         })}
                     </Select>
+
+                    <Button
+                        onClick={() => this.setState({displayImportModal: true})}
+                        style = {{background: 'white', marginLeft: '50px'}}
+                    >
+                        Import Category From File
+                    </Button>
                 </div>
                 <div style={{display: 'flex', width: '100%'}}>
                 <List
                     component="nav"
                 >
-                    <div style={{display: 'flex'}}>
+                    <div 
+                        style={{display: 'flex'}}
+                        key={'listDIV##'}
+                    >
                     {this.state.categories.map(c => {
-                        return (<div style={{display:'flex', flexDirection:'column', flexWrap: 'wrap', flexBasis: '100%', flex: 1, marginRight: '10px'}}>
+                        return (<div style={{display:'flex', flexDirection:'column', flexWrap: 'wrap', flexBasis: '100%', flex: 1, marginRight: '10px'}} key={'categoryDIV#$'+ c.id}>
                             {this.state.searchData.Categories[c.id] ?
                             <ListItem button onClick={() => {
                                 Database.updateCategory({...c, expanded: c.expanded === true ? false : true}, () => this.refreshCategories())
@@ -255,8 +324,8 @@ class Tracks extends React.Component<IProps, IState>{
                             >
                                 <ListItemText primary={c.name}/>
                             </ListItem> : null}
-                        <Collapse in={c.expanded} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
+                        <Collapse in={c.expanded} timeout="auto" unmountOnExit key={'collapseELEMENT%#' + c.id}>
+                            <List component="div" disablePadding key={'collapsedLIST#%'+c.id}>
                             {this.state.tracks.filter(t => t.categoryid == c.id).map(t => {
                                 return (
                                 <>
@@ -320,12 +389,13 @@ class Tracks extends React.Component<IProps, IState>{
                     {this.state.currentCategory.id != 0 ? 
                         <MenuItem onClick={() => {
                             this.handleMenuClose()
-                            if(this.state.currentTrack.displayname != ''){
-                                Database.deleteTracks([this.state.currentTrack.id], () => this.refreshTracks())
-                            }
-                            else if(this.state.currentCategory.name != ''){
-                                Database.deleteCategories([this.state.currentCategory.id], () => this.refreshCategories())
-                            }
+                            // if(this.state.currentTrack.displayname != ''){
+                            //     Database.deleteTracks([this.state.currentTrack.id], () => this.refreshTracks())
+                            // }
+                            // else if(this.state.currentCategory.name != ''){
+                            //     Database.deleteCategories([this.state.currentCategory.id], () => this.refreshCategories())
+                            // }
+                            this.setState({displayDeleteModal: true})
                             }}>Delete
                         </MenuItem> 
                     : null}

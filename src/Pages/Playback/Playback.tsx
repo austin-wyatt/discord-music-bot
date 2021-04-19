@@ -17,7 +17,9 @@ interface DispatchProps{
     setLoop: (loop: boolean) => void,
     clearQueue: () => void,
     nextEntry: Track,
-    previousEntry: Track
+    previousEntry: Track,
+    removeTrackFromQueue: (track: Track) => void
+    setQueueOrder: (tracks: Track[]) => void
 }
 
 interface IProps extends DispatchProps{
@@ -27,6 +29,8 @@ interface IProps extends DispatchProps{
 interface IState{
     volume: number
 }
+
+const buttonStyle = {backgroundColor: 'rgba(0, 0, 0, 0.04)', marginRight: '10px', marginBottom:'5px', border: 'solid rgba(0, 0, 0, 0.2) 1px'}
 
 class Playback extends React.Component<IProps, IState>{
 
@@ -40,28 +44,7 @@ class Playback extends React.Component<IProps, IState>{
 
     playTrack = (track: Track) => {
         if(track){
-            let previousEntry = null
-            let nextEntry = null
-
-            let foundTrack = false
-            this.props.queue.some(t => {
-                if(foundTrack){
-                    nextEntry = t;
-                    foundTrack = false
-                    return true
-                }
-                if(t.id == track.id){
-                    foundTrack = true
-                }
-                if(!foundTrack){
-                    previousEntry = t
-                }
-                return false
-            })
-
-            this.props.setNextEntry(nextEntry)
-            this.props.setPreviousEntry(previousEntry)
-            this.props.setCurrentEntry(track)
+            this.setNextAndPreviousTrack(track)
 
             switch(track.mediatype){
                 case MediaType.LocalResource:
@@ -75,6 +58,31 @@ class Playback extends React.Component<IProps, IState>{
                     break
             }
         }
+    }
+
+    setNextAndPreviousTrack = (track: Track) => {
+        let previousEntry = null
+        let nextEntry = null
+
+        let foundTrack = false
+        this.props.queue.some(t => {
+            if(foundTrack){
+                nextEntry = t;
+                foundTrack = false
+                return true
+            }
+            if(t.id == track.id){
+                foundTrack = true
+            }
+            if(!foundTrack){
+                previousEntry = t
+            }
+            return false
+        })
+
+        this.props.setNextEntry(nextEntry)
+        this.props.setPreviousEntry(previousEntry)
+        this.props.setCurrentEntry(track)
     }
 
     render(){
@@ -91,10 +99,18 @@ class Playback extends React.Component<IProps, IState>{
                         height='65vh'
                         trackSelected={this.playTrack}
                         currentEntry={this.props.currentEntry}
+                        removeTrackFromQueue={(track) => {
+                            this.props.removeTrackFromQueue(track)
+                            setTimeout(() => this.setNextAndPreviousTrack(this.props.currentEntry), 50) //lazy way of doing this, has bugs but itll be fine 
+                        }}
+                        setQueueOrder={(tracks) => {
+                            this.props.setQueueOrder(tracks)
+                            setTimeout(() => this.setNextAndPreviousTrack(this.props.currentEntry), 50) //lazy way of doing this, has bugs but itll be fine 
+                        }}
                     />
                 </div>
                 <div style={{marginLeft: '25px', width: '450px'}}>
-                    <div>
+                    {/* <div>
                         <Slider 
                             value={this.state.volume} 
                             style={{width:'25%'}}
@@ -108,36 +124,36 @@ class Playback extends React.Component<IProps, IState>{
                                 webCalls.setVolume(n / 50)
                             }} 
                         />
-                    </div>
+                    </div> */}
                     <div>
                         <Button 
                             onClick={() => webCalls.play()}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >PLAY</Button>
                         <Button 
                             onClick={() => webCalls.pause()}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >PAUSE</Button>
 
                         <Button 
                             onClick={() => console.log(this.props)}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >PRINT STATE</Button>
 
                         <Button 
                             onClick={() => this.props.clearQueue()}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >CLEAR QUEUE</Button>
 
                         <Button 
                             onClick={() => this.playTrack(this.props.nextEntry || this.props.queue[0])}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >NEXT</Button>
                         <Button 
                             onClick={() => this.playTrack(this.props.previousEntry || this.props.queue[this.props.queue.length - 1])}
-                            style={{backgroundColor: 'grey', marginRight: '10px', marginBottom:'5px'}}
+                            style={buttonStyle}
                         >PREVIOUS</Button>
-                        <div>
+                        <div style={{userSelect: 'none'}}>
                             LOOP
                             <Switch 
                                 checked={this.props.loop}
