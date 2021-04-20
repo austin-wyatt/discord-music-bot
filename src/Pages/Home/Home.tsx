@@ -1,8 +1,9 @@
 import { Button, MenuItem, Select } from "@material-ui/core";
 import * as React from "react";
 import * as webCalls from '../../DiscordFunctions/webCalls'
-import * as fs from 'fs';
 import { Channel, Guild } from "../../types";
+import * as Database from '../../Dexie/Database'
+import AddServerModal from '../../Components/Modals/AddServerModal'
 
 interface IProps{
 
@@ -12,6 +13,7 @@ interface IState{
     guilds: Guild[]
     currentGuild: Guild
     currentChannel: Channel
+    displayAddServerModal: boolean
 }
 
 class Home extends React.Component<IProps, IState>{
@@ -21,39 +23,56 @@ class Home extends React.Component<IProps, IState>{
         this.state = {
             guilds: [],
             currentGuild: null,
-            currentChannel: null
+            currentChannel: null,
+            displayAddServerModal: false
         }
     }
 
     componentDidMount(){
-        webCalls.getServers((guildData) => {
-            let guilds = guildData as Array<Guild>
-            this.setState({
-                guilds: guilds
+        this.refreshServers()
+    }
+
+    refreshServers = () => {
+        Database.getServers((servers) => {
+            webCalls.getServersFromIDs(servers.map(s => s.guildid), (guildData) => {
+                this.setState({
+                    guilds: guildData as Array<Guild>
+                })
             })
         })
     }
 
-//     style = {textFieldStyle}
-//     value = {this.state.currentTrack.categoryid}
-//     onChange = {(event) => {
-//         this.setState({
-//             currentTrack: {...this.state.currentTrack, categoryid: event.target.value as number || 0}
-//         })
-//     }}
-// >
-//     {this.state.categories.map(c => {
-//         return <MenuItem value={c.id}>{c.name}</MenuItem>
-//     })}
-
     render(){
         return (
-            <> {/** TODO, add a list of voice channels that the bot is allowed to connect to that can be selected from instead of requiring !jc*/}
-            <div> 
+            <> 
+            <div>
+                {this.state.displayAddServerModal ? 
+                    <AddServerModal
+                        onClose={() => {
+                            this.refreshServers()
+                            this.setState({displayAddServerModal: false})
+                        }}
+                    /> 
+                : null}
                 <Button 
                     onClick={() => webCalls.initialize()}
                     style={{backgroundColor: 'lightblue', marginRight: '10px'}}
                 >INITIALIZE</Button>
+                <Button 
+                    onClick={() => this.setState({displayAddServerModal: true})}
+                    style={{backgroundColor: 'lightblue', marginRight: '10px'}}
+                >ADD NEW SERVER</Button>
+
+                <Button 
+                    onClick={() => {
+                        if(this.state.currentGuild){
+                            Database.getServerByGuildID(this.state.currentGuild.id, (server) => {
+                                Database.deleteServers([server.id], () => this.refreshServers())
+                            })
+                        }
+                    }}
+                    style={{backgroundColor: 'lightblue', marginRight: '10px'}}
+                >DELETE SERVER</Button>
 
                 <div style={{marginTop: '20px'}}>
                     <div style={{minWidth: '100px'}}>

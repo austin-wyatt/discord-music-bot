@@ -1,11 +1,12 @@
 import Dexie, { Collection, Table } from 'dexie'
-import { Category, MediaType, Track } from '../types';
+import { Category, MediaType, Server, Track } from '../types';
 
 //add local tracks mass import
 
 interface TableNames{
     categories: Table,
-    tracks: Table
+    tracks: Table,
+    servers: Table
 }
 
 //@ts-ignore, no
@@ -15,8 +16,13 @@ db.version(1).stores({
     tracks: '++id, url, displayname, categoryid'
 })
 
+db.version(2).stores({
+    categories: '++id, name',
+    tracks: '++id, url, displayname, categoryid',
+    servers: '++id, &guildid, name'
+})
+
 db.on("populate", function() {
-    // Init your DB with some default statuses:
     db.categories.add({id: 0, name: "Default", expanded: true});
 });
 
@@ -118,4 +124,41 @@ export const deleteCategories = (items: number[], fnCallback: () => void) => {
             deleteTracks(tracks.map(t => t.id), () => {})
         })
     })
+}
+
+export const addServer = (server: Server, fnCallback: (server?: Server) => void) => {
+    db.servers.add({name: server.name, guildid: server.guildid})
+    .then(r => {
+        getServerByName(server.name, fnCallback)
+    }).catch(e => {
+        fnCallback()
+    });
+}
+
+export const getServerByName = (name: string, fnCallback: (item: Server) => void) => {
+    db.servers.where('name').equals(name).first().then(item => {
+        fnCallback(item);
+    }).catch(e => {
+        fnCallback(undefined);
+    })
+}
+
+export const getServerByGuildID = (id: number, fnCallback: (item: Server) => void) => {
+    db.servers.where('guildid').equals(id).first().then(item => {
+        fnCallback(item);
+    }).catch(e => {
+        fnCallback(undefined);
+    })
+}
+
+export const getServers = (fnCallback: (items: Server[]) => void) => {
+    db.servers.toArray().then(items => {
+        fnCallback(items);
+    }).catch(e => {
+        fnCallback(undefined);
+    })
+}
+
+export const deleteServers = (items: number[], fnCallback: () => void) => {
+    db.servers.bulkDelete(items).then(fnCallback).catch(fnCallback)
 }

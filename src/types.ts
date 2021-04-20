@@ -18,6 +18,12 @@ export interface Category{
     expanded: boolean
 }
 
+export interface Server{
+    id: number,
+    name: string,
+    guildid: number
+}
+
 export enum MediaType{
     LocalResource,
     YoutubeLink,

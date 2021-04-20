@@ -85,6 +85,15 @@ export const getServers = (fnCallback: (guildData: GuildReturnData) => void) => 
     })
 }
 
+export const getServersFromIDs = (guildIDs: number[], fnCallback: (guildData: GuildReturnData) => void) => {
+    DiscordAxiosInstance.get('getServersFromIDs&' + JSON.stringify(guildIDs))
+    .then((response) => {
+        fnCallback(response.data)
+    }).catch((error: any) => {
+        console.log(error)
+    })
+}
+
 let webSocketClient = new WebSocket('ws://localhost:54002/',"echo-protocol");
 
 export const sendInterrupt = () => { 

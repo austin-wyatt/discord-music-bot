@@ -302,6 +302,12 @@ class Tracks extends React.Component<IProps, IState>{
                     >
                         Import Category From File
                     </Button>
+                    <Button
+                        onClick={() => this.setState({displayImportModal: true})}
+                        style = {{background: 'white', marginLeft: '50px'}}
+                    >
+                        Import Category From Youtube Playlist
+                    </Button>
                 </div>
                 <div style={{display: 'flex', width: '100%'}}>
                 <List
