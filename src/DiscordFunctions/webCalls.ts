@@ -79,7 +79,10 @@ export interface GuildReturnData{
 export const getServers = (fnCallback: (guildData: GuildReturnData) => void) => {
     DiscordAxiosInstance.get('getServers')
     .then((response) => {
-        fnCallback(response.data)
+        if(response.data == '5')
+            fnCallback([])
+        else
+            fnCallback(response.data)
     }).catch((error: any) => {
         console.log(error)
     })
@@ -88,7 +91,10 @@ export const getServers = (fnCallback: (guildData: GuildReturnData) => void) => 
 export const getServersFromIDs = (guildIDs: number[], fnCallback: (guildData: GuildReturnData) => void) => {
     DiscordAxiosInstance.get('getServersFromIDs&' + JSON.stringify(guildIDs))
     .then((response) => {
-        fnCallback(response.data)
+        if(response.data == '5')
+            fnCallback([])
+        else
+            fnCallback(response.data)
     }).catch((error: any) => {
         console.log(error)
     })
