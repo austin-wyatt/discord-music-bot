@@ -7,6 +7,7 @@ import AddEditCategoryModal from '../../Components/Modals/AddEditCategoryModal'
 import * as actions from '../../Redux/actions'
 import { connect } from 'react-redux'
 import ImportFromFile from '../../Components/Modals/ImportFromFile';
+import ImportFromPlaylist from '../../Components/Modals/ImportFromPlaylist';
 
 interface DispatchProps{
     addTrackToQueue: (track: Track) => void
@@ -33,7 +34,8 @@ interface IState{
         Categories: SearchData,
         Tracks: SearchData
     },
-    displayImportModal: boolean
+    displayImportModal: boolean,
+    displayYoutubeImportModal: boolean,
     displayDeleteModal: boolean
 }
 
@@ -82,6 +84,7 @@ class Tracks extends React.Component<IProps, IState>{
             searchType: SearchType.Categories,
             searchData: {Categories:{}, Tracks: {}},
             displayImportModal: false,
+            displayYoutubeImportModal: false,
             displayDeleteModal: false
         }
     }
@@ -217,6 +220,17 @@ class Tracks extends React.Component<IProps, IState>{
                         onClose={() => {this.setState({displayImportModal: false})}}
                     /> 
                 : null}
+                {this.state.displayYoutubeImportModal ? 
+                    <ImportFromPlaylist 
+                        onComplete={() => {
+                            this.setState({
+                                displayYoutubeImportModal: false
+                            })
+                            this.refreshCategories(undefined, () => this.refreshTracks(undefined, this.handleSearch))
+                        }}
+                        onClose={() => {this.setState({displayYoutubeImportModal: false})}}
+                    /> 
+                : null}
                 {this.state.displayDeleteModal ? 
                 <Modal
                     open={true}
@@ -303,7 +317,7 @@ class Tracks extends React.Component<IProps, IState>{
                         Import Category From File
                     </Button>
                     <Button
-                        onClick={() => this.setState({displayImportModal: true})}
+                        onClick={() => this.setState({displayYoutubeImportModal: true})}
                         style = {{background: 'white', marginLeft: '50px'}}
                     >
                         Import Category From Youtube Playlist
