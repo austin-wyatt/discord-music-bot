@@ -13,7 +13,7 @@ In the home tab of the application you will need to press the "add new server" b
 
 Following that, you will be able to select the server and channel you wish to join. 
 
-# Queueing and play tracks
+# Queue and play tracks
 
 The bot can play both local audio files as well as youtube links. To add a track, navigate to the "Tracks" screen and press the "add track" button. 
 There you can copy and paste youtube links or the path to the file on your system. If you are specifying a local file be sure to selecte "Local Resource" from the
